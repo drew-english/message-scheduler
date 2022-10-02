@@ -1,0 +1,22 @@
+#[macro_use] extern crate rocket;
+
+use tracing::Level;
+use tracing_subscriber::FmtSubscriber;
+
+fn init() {
+  // init logger
+  let subscriber = FmtSubscriber::builder()
+    .with_max_level(Level::INFO)
+    .finish();
+  tracing::subscriber::set_global_default(subscriber)
+    .expect("setting default subscriber failed");
+
+  // init colored result logging
+  color_eyre::install().unwrap();
+}
+
+#[launch]
+fn rocket() -> _ {
+  init();
+  rocket::build().mount("/", routes![])
+}
