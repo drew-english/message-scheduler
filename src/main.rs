@@ -1,5 +1,7 @@
 #[macro_use] extern crate rocket;
 
+mod http;
+
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
 
@@ -18,5 +20,7 @@ fn init() {
 #[launch]
 fn rocket() -> _ {
   init();
-  rocket::build().mount("/", routes![])
+  rocket::build()
+    .attach(http::middlware::Logger)
+    .mount("/api/v1/", http::routes())
 }
