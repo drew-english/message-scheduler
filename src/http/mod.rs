@@ -1,10 +1,11 @@
-mod layers;
 mod handlers;
+mod layers;
 
-use axum::{Router, middleware, routing::get};
+use axum::{middleware, routing::get, Router};
+use tower::ServiceBuilder;
 
 pub fn router() -> Router {
     Router::new()
         .route("/test", get(handlers::test))
-        .layer(middleware::from_fn(layers::logger))
+        .layer(ServiceBuilder::new().layer(middleware::from_fn(layers::logger)))
 }

@@ -269,6 +269,7 @@ dependencies = [
  "async-trait",
  "axum",
  "tokio",
+ "tower",
  "tracing",
  "tracing-subscriber",
 ]
