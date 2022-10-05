@@ -1,3 +1,4 @@
+#[derive(Clone)]
 pub enum Action {
     // Http,
     Log,
@@ -9,6 +10,7 @@ impl std::fmt::Display for Action {
     }
 }
 
+#[derive(Clone)]
 pub struct Message {
     pub action: Action,
     pub payload: String,

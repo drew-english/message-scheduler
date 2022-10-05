@@ -1,8 +1,8 @@
 #[macro_use]
 extern crate rocket;
 
-mod http;
 mod core;
+mod http;
 mod models;
 
 use tracing::Level;
