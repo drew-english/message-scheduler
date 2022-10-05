@@ -1,5 +1,5 @@
-use super::dispatcher::dispatch;
-use super::queue;
+use crate::core::dispatcher::dispatch;
+use crate::core::queue;
 use tokio::task;
 
 pub fn start() {

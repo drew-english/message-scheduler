@@ -1,6 +1,10 @@
-pub mod middlware;
-mod routes;
+mod layers;
+mod handlers;
 
-pub fn routes() -> Vec<rocket::Route> {
-    routes![routes::test,]
+use axum::{Router, middleware, routing::get};
+
+pub fn router() -> Router {
+    Router::new()
+        .route("/test", get(handlers::test))
+        .layer(middleware::from_fn(layers::logger))
 }

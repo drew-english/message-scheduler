@@ -1,4 +1,5 @@
 use crate::models::message;
+use async_trait::async_trait;
 use tracing::{error, info, warn};
 
 #[async_trait]
