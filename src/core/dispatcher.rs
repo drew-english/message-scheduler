@@ -1,4 +1,4 @@
-use crate::models::message;
+use crate::models::message::Message;
 use async_trait::async_trait;
 use tracing::{error, info, warn};
 
@@ -27,12 +27,26 @@ impl Action for LogAction {
     }
 }
 
-pub async fn dispatch(msg: Box<message::Message>) {
-    let action = match msg.action {
-        message::Action::Log => LogAction {
-            log_type: msg.action_extra,
-            log_payload: msg.payload,
-        },
+pub async fn dispatch(msg: Message, db_pool: sqlx::Pool<sqlx::Postgres>) {
+    match msg.delete(&db_pool).await {
+        Ok(_) => {
+            info!(
+                id = msg.id.to_string(),
+                action = msg.action.to_string(),
+                "dispatched message",
+            );
+        }
+        Err(err) => error!(
+            error = err.to_string(),
+            "[Dipatcher] error processing message"
+        ),
     };
-    action.exec().await;
+
+    // let action = match msg.action {
+    //     message::Action::Log => LogAction {
+    //         log_type: msg.action_extra,
+    //         log_payload: msg.payload,
+    //     },
+    // };
+    // action.exec().await;
 }

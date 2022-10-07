@@ -1,21 +1,14 @@
-use crate::models::message::{Action, Message};
+use crate::models::message::Message;
+use chrono::prelude::Utc;
+use sqlx::{Pool, Postgres};
+use tracing::error;
 
-pub fn front(limit: Option<usize>) -> Vec<Box<Message>> {
-    let end_index = limit.unwrap_or(1);
-    return all()[..end_index].to_vec();
-}
-
-pub fn all() -> Vec<Box<Message>> {
-    vec![
-        Box::new(Message {
-            action: Action::Log,
-            action_extra: "info".to_string(),
-            payload: "this is info".to_string(),
-        }),
-        Box::new(Message {
-            action: Action::Log,
-            action_extra: "warn".to_string(),
-            payload: "this is warning".to_string(),
-        }),
-    ]
+pub async fn needing_delivery(db_pool: &Pool<Postgres>, limit: Option<i64>) -> Vec<Message> {
+    match Message::find_by_delivery_time(db_pool, &Utc::now(), limit).await {
+        Ok(messages) => messages,
+        Err(err) => {
+            error!(error = err.to_string(), "[Queue] Error querying messages");
+            Vec::new()
+        }
+    }
 }

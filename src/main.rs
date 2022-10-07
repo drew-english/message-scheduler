@@ -29,7 +29,7 @@ async fn main() {
 
     let db_pool = db_connection().await;
 
-    core::process_loop::start();
+    tokio::task::spawn(core::process_loop::start(db_pool.clone()));
 
     let host = std::env::var("API_HOST").unwrap();
     let port = std::env::var("API_PORT").unwrap();

@@ -1,6 +1,6 @@
 CREATE TABLE messages (
-  id UUID,
-  delivery_time timestamp,
-  payload text,
-  action jsonb
+  id UUID PRIMARY KEY,
+  delivery_time timestamptz NOT NULL,
+  payload text NOT NULL,
+  action jsonb NOT NULL
 );
