@@ -10,6 +10,15 @@ pub struct Message {
 }
 
 impl Message {
+    pub fn new(delivery_time: DateTime<Utc>, action: serde_json::Value, payload: String) -> Self {
+        Message {
+            id: Uuid::new_v4(),
+            delivery_time,
+            action,
+            payload,
+        }
+    }
+
     pub async fn create(&self, db_pool: &Pool<Postgres>) -> Result<PgQueryResult, sqlx::Error> {
         query!(
             "INSERT INTO messages (id, delivery_time, action, payload) values ($1, $2, $3, $4)",

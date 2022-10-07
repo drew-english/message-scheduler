@@ -4,11 +4,12 @@ use tokio::task;
 use tracing::warn;
 
 const BATCH_PROCESS_LIMIT: i64 = 1;
+const INTERVAL: u64 = 10;
 
 pub async fn start(db_pool: sqlx::Pool<sqlx::Postgres>) {
     loop {
         find_and_process_messages(&db_pool).await;
-        tokio::time::sleep(tokio::time::Duration::new(10, 0)).await;
+        tokio::time::sleep(tokio::time::Duration::new(INTERVAL, 0)).await;
     }
 }
 
