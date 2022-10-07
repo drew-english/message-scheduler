@@ -8,7 +8,14 @@ edition = "2021"
 [dependencies]
 async-trait = "0.1.57"
 axum = "0.5.16"
+chrono = "0.4.22"
+dotenv = "0.15.0"
+serde_json = "1.0.85"
+sqlx = { version = "0.6.2", features = ["runtime-tokio-native-tls", "postgres", "migrate", "macros", "uuid", "chrono", "json"] }
 tokio = { version = "1.21.2", features = ["full"] }
 tower = "0.4.13"
 tracing = "0.1.36"
 tracing-subscriber = "0.3.15"
+
+[dev-dependencies]
+
