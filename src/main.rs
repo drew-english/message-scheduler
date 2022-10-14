@@ -4,6 +4,7 @@ mod models;
 
 use std::net::SocketAddr;
 
+use crate::core::process_loop;
 use tracing::{info, Level};
 use tracing_subscriber::FmtSubscriber;
 
@@ -28,8 +29,7 @@ async fn main() {
     init_logger();
 
     let db_pool = db_connection().await;
-
-    tokio::task::spawn(core::process_loop::start(db_pool.clone()));
+    let new_msg_delivery_tx = process_loop::run(db_pool.clone());
 
     let host = std::env::var("API_HOST").unwrap();
     let port = std::env::var("API_PORT").unwrap();
@@ -37,7 +37,7 @@ async fn main() {
     let addr = format!("{}:{}", host, port).parse::<SocketAddr>().unwrap();
 
     axum::Server::bind(&addr)
-        .serve(http::router(db_pool).into_make_service())
+        .serve(http::router(db_pool, new_msg_delivery_tx).into_make_service())
         .await
         .unwrap();
 }

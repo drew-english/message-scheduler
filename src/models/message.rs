@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use sqlx::{postgres::PgQueryResult, query, query_as, types::Uuid, FromRow, Pool, Postgres};
+use sqlx::{postgres::PgQueryResult, query, types::Uuid, FromRow, Pool, Postgres};
 
 #[derive(Clone, FromRow)]
 pub struct Message {
@@ -19,7 +19,7 @@ impl Message {
         }
     }
 
-    pub async fn create(&self, db_pool: &Pool<Postgres>) -> Result<PgQueryResult, sqlx::Error> {
+    pub async fn create(&self, db_pool: &Pool<Postgres>) -> Result<&Self, sqlx::Error> {
         query!(
             "INSERT INTO messages (id, delivery_time, action, payload) values ($1, $2, $3, $4)",
             self.id,
@@ -28,28 +28,13 @@ impl Message {
             self.payload,
         )
         .execute(db_pool)
-        .await
+        .await?;
+        Ok(self)
     }
 
     pub async fn delete(&self, db_pool: &Pool<Postgres>) -> Result<PgQueryResult, sqlx::Error> {
         query!("DELETE FROM messages WHERE id=$1", self.id)
             .execute(db_pool)
             .await
-    }
-
-    pub async fn find_by_delivery_time(
-        db_pool: &Pool<Postgres>,
-        time: &DateTime<Utc>,
-        limit: Option<i64>,
-    ) -> Result<Vec<Self>, sqlx::Error> {
-        let limit_by = limit.unwrap_or(20);
-        query_as!(
-            Self,
-            "SELECT * FROM messages WHERE delivery_time <= $1 LIMIT $2",
-            time,
-            limit_by,
-        )
-        .fetch_all(db_pool)
-        .await
     }
 }
