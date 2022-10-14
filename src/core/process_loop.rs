@@ -101,7 +101,7 @@ async fn msg_delivery_process(
             None => {
                 refresh_cache = true;
                 fetch_next_message_delivery(p_data.clone()).await
-            },
+            }
         };
 
         if refresh_cache || new_delivery_time < next_message_delivery {
@@ -117,7 +117,7 @@ async fn msg_delivery_process(
                         sleep(duration).await;
                         task_p_data.control_ch_send(0).await;
                     }));
-                },
+                }
                 Err(_) => p_data.control_ch_send(0).await,
             }
         }
