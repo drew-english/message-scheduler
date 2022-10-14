@@ -22,7 +22,7 @@ pub async fn create_message(
     Extension(db_pool): Extension<Pool<Postgres>>,
     Extension(msg_delivery_tx): Extension<UnboundedSender<Option<DateTime<Utc>>>>,
 ) -> StatusCode {
-    match crate::models::message::Message::new(
+    match crate::models::Message::new(
         body.delivery_time.unwrap_or_else(Utc::now),
         body.action.clone(),
         body.payload.clone(),

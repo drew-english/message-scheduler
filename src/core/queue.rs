@@ -1,4 +1,4 @@
-use crate::models::message::Message;
+use crate::models::Message;
 use chrono::{DateTime, Utc};
 use sqlx::{query, query_as, Pool, Postgres, Row};
 use tracing::error;
