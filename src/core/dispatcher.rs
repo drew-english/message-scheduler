@@ -1,16 +1,16 @@
 use crate::models::Message;
 use tracing::{error, info};
 
-use super::action_builder::{parse_action, Action};
+use super::action_builder::exec_action;
 
 pub async fn dispatch(msg: Message, db_pool: sqlx::Pool<sqlx::Postgres>) {
-    match parse_action(&msg) {
-        Ok(action) => action.exec().await,
+    match exec_action(&msg).await {
+        Ok(_) => (),
         Err(err) => error!(
             id = msg.id.to_string(),
             action = msg.action.to_string(),
             error = err.to_string(),
-            "[Dispatcher] Error parsing message into action"
+            "[Dispatcher] Error dispatching message"
         ),
     };
 
