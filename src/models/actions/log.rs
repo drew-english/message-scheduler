@@ -17,23 +17,20 @@ enum LogType {
 #[serde(rename_all = "camelCase")]
 pub struct LogV1 {
     log_type: LogType,
-    #[serde(skip)]
-    log_msg: String,
+    log_value: String,
 }
 
 #[async_trait]
 impl Action for LogV1 {
-    fn init(attributes: Value, payload: String) -> Result<Self, ActionError> {
-        let mut s: Self = serde_json::from_value(attributes)?;
-        s.log_msg = payload;
-        Ok(s)
+    fn init(attributes: Value) -> Result<Self, ActionError> {
+        Ok(serde_json::from_value(attributes)?)
     }
 
     async fn exec(&self) -> Result<(), ActionError> {
         match self.log_type {
-            LogType::Info => info!(message = self.log_msg, "[Message][LogAction]"),
-            LogType::Warn => warn!(message = self.log_msg, "[Message][LogAction]"),
-            LogType::Error => error!(message = self.log_msg, "[Message][LogAction]"),
+            LogType::Info => info!(message = self.log_value, "[Message][LogAction]"),
+            LogType::Warn => warn!(message = self.log_value, "[Message][LogAction]"),
+            LogType::Error => error!(message = self.log_value, "[Message][LogAction]"),
         };
         Ok(())
     }

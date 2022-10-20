@@ -34,7 +34,7 @@ async fn find_by_delivery_time(
     let limit_by = limit.unwrap_or(20);
     query_as!(
         Message,
-        "SELECT * FROM messages WHERE delivery_time <= $1 LIMIT $2",
+        "SELECT id, delivery_time, action_type AS \"action_type: _\", version, attributes FROM messages WHERE delivery_time <= $1 LIMIT $2",
         time,
         limit_by,
     )

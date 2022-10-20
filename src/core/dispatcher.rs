@@ -8,7 +8,7 @@ pub async fn dispatch(msg: Message, db_pool: sqlx::Pool<sqlx::Postgres>) {
         Ok(_) => (),
         Err(err) => error!(
             id = msg.id.to_string(),
-            action = msg.action.to_string(),
+            action = msg.action_type.to_string(),
             error = err.to_string(),
             "[Dispatcher] Error dispatching message"
         ),
@@ -18,7 +18,7 @@ pub async fn dispatch(msg: Message, db_pool: sqlx::Pool<sqlx::Postgres>) {
         Ok(_) => {
             info!(
                 id = msg.id.to_string(),
-                action = msg.action.to_string(),
+                action = msg.action_type.to_string(),
                 desired_delivery_time = msg.delivery_time.to_string(),
                 "[Dipatcher] Finished dispatching message",
             );

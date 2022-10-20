@@ -28,16 +28,14 @@ pub struct HttpV1 {
     auth: AuthMethod,
     url: String,
     method: HttpMethod,
-    #[serde(skip)]
-    body: Value,
+    #[serde(default)]
+    body: String,
 }
 
 #[async_trait]
 impl Action for HttpV1 {
-    fn init(attributes: Value, payload: String) -> Result<Self, ActionError> {
-        let mut s: Self = serde_json::from_value(attributes)?;
-        s.body = serde_json::from_str(&payload)?;
-        Ok(s)
+    fn init(attributes: Value) -> Result<Self, ActionError> {
+        Ok(serde_json::from_value(attributes)?)
     }
 
     async fn exec(&self) -> Result<(), ActionError> {
@@ -55,7 +53,10 @@ impl Action for HttpV1 {
         builder = match (&self.method, self.body.to_string().len()) {
             (HttpMethod::Get, _) => builder,
             (_, 0) => builder,
-            (_, _) => builder.json(&self.body),
+            (_, _) => {
+                builder.header("Content-Type", "application/json")
+                    .body(self.body.clone())
+            }
         };
 
         builder = match &self.auth {

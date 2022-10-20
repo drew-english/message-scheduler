@@ -1,4 +1,4 @@
 pub mod actions;
-mod message;
+pub mod message;
 
 pub use message::Message;

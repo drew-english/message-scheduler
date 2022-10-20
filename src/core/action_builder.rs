@@ -1,12 +1,11 @@
 use std::fmt;
 
 use async_trait::async_trait;
-use serde::Deserialize;
 use serde_json::Value;
 
 use crate::models::{
     actions::{HttpV1, LogV1},
-    Message,
+    Message, message::ActionType,
 };
 
 pub enum ActionError {
@@ -35,41 +34,19 @@ impl fmt::Display for ActionError {
     }
 }
 
-#[derive(Deserialize, Debug, PartialEq)]
-#[serde(rename_all = "lowercase")]
-enum ActionType {
-    Log,
-    Http,
-}
-
-impl fmt::Display for ActionType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
-    }
-}
-
-#[derive(Deserialize)]
-struct ParsedAction {
-    #[serde(rename = "type")]
-    action_type: ActionType,
-    version: u16,
-    attributes: Value,
-}
-
 #[async_trait]
 pub trait Action {
-    fn init(attributes: Value, payload: String) -> Result<Self, ActionError> where Self: std::marker::Sized;
+    fn init(attributes: Value) -> Result<Self, ActionError> where Self: std::marker::Sized;
     async fn exec(&self) -> Result<(), ActionError>;
 }
 
 pub async fn exec_action(msg: &Message) -> Result<(), ActionError> {
-    let parsed: ParsedAction = serde_json::from_value(msg.action.clone())?;
-    let args = (parsed.attributes, msg.payload.clone());
+    let attr = msg.attributes.clone();
 
-    match (parsed.action_type, parsed.version) {
-        (ActionType::Log, 1) => LogV1::init(args.0, args.1)?.exec().await,
-        (ActionType::Log, _) => LogV1::init(args.0, args.1)?.exec().await,
-        (ActionType::Http, 1) => HttpV1::init(args.0, args.1)?.exec().await,
-        (ActionType::Http, _) => HttpV1::init(args.0, args.1)?.exec().await,
+    match (&msg.action_type, msg.version) {
+        (ActionType::Log, 1) => LogV1::init(attr)?.exec().await,
+        (ActionType::Log, _) => LogV1::init(attr)?.exec().await,
+        (ActionType::Http, 1) => HttpV1::init(attr)?.exec().await,
+        (ActionType::Http, _) => HttpV1::init(attr)?.exec().await,
     }
 }
