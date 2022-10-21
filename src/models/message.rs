@@ -3,7 +3,7 @@ use std::fmt;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use sqlx::{FromRow, Pool, Postgres, postgres::PgQueryResult, query};
+use sqlx::{postgres::PgQueryResult, query, FromRow, Pool, Postgres};
 use uuid::Uuid;
 
 #[derive(Clone, Deserialize, Debug, PartialEq, Eq, sqlx::Type)]
@@ -23,7 +23,8 @@ impl fmt::Display for ActionType {
 impl Serialize for ActionType {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer {
+        S: serde::Serializer,
+    {
         match self {
             ActionType::Log => serializer.serialize_str("log"),
             ActionType::Http => serializer.serialize_str("http"),

@@ -5,12 +5,13 @@ use serde_json::Value;
 
 use crate::models::{
     actions::{HttpV1, LogV1},
-    Message, message::ActionType,
+    message::ActionType,
+    Message,
 };
 
 pub enum ActionError {
     ParseError(serde_json::Error),
-    ExecError(String)
+    ExecError(String),
 }
 
 impl From<serde_json::Error> for ActionError {
@@ -35,18 +36,47 @@ impl fmt::Display for ActionError {
 }
 
 #[async_trait]
-pub trait Action {
-    fn init(attributes: Value) -> Result<Self, ActionError> where Self: std::marker::Sized;
+pub trait Action: Send + Sync {
+    fn init(attributes: Value) -> Result<Self, ActionError>
+    where
+        Self: std::marker::Sized;
     async fn exec(&self) -> Result<(), ActionError>;
 }
 
-pub async fn exec_action(msg: &Message) -> Result<(), ActionError> {
-    let attr = msg.attributes.clone();
-
-    match (&msg.action_type, msg.version) {
-        (ActionType::Log, 1) => LogV1::init(attr)?.exec().await,
-        (ActionType::Log, _) => LogV1::init(attr)?.exec().await,
-        (ActionType::Http, 1) => HttpV1::init(attr)?.exec().await,
-        (ActionType::Http, _) => HttpV1::init(attr)?.exec().await,
+pub fn validate_action(
+    Message {
+        action_type,
+        version,
+        attributes,
+        ..
+    }: &Message,
+) -> Option<ActionError> {
+    let attr = attributes.clone();
+    match (action_type, version) {
+        (ActionType::Log, 1) => LogV1::init(attr).err(),
+        (ActionType::Log, _) => LogV1::init(attr).err(),
+        (ActionType::Http, 1) => HttpV1::init(attr).err(),
+        (ActionType::Http, _) => HttpV1::init(attr).err(),
     }
+}
+
+pub fn create_action(
+    Message {
+        action_type,
+        version,
+        attributes,
+        ..
+    }: &Message,
+) -> Result<Box<dyn Action>, ActionError> {
+    let attr = attributes.clone();
+    Ok(match (action_type, version) {
+        (ActionType::Log, 1) => Box::new(LogV1::init(attr)?),
+        (ActionType::Log, _) => Box::new(LogV1::init(attr)?),
+        (ActionType::Http, 1) => Box::new(HttpV1::init(attr)?),
+        (ActionType::Http, _) => Box::new(HttpV1::init(attr)?),
+    })
+}
+
+pub async fn exec_action(msg: &Message) -> Result<(), ActionError> {
+    create_action(msg)?.exec().await
 }

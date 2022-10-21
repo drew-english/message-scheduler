@@ -7,11 +7,18 @@ use sqlx::{Pool, Postgres};
 use tokio::{sync::mpsc::UnboundedSender, task};
 use tracing::error;
 
+use crate::core::action_builder::validate_action;
+
 pub async fn create_message(
     Json(msg): Json<crate::models::Message>,
     Extension(db_pool): Extension<Pool<Postgres>>,
     Extension(msg_delivery_tx): Extension<UnboundedSender<Option<DateTime<Utc>>>>,
-) -> StatusCode {
+) -> (StatusCode, String) {
+    let action_err = validate_action(&msg);
+    if action_err.is_some() {
+        return (StatusCode::BAD_REQUEST, action_err.unwrap().to_string());
+    }
+
     match msg.create(&db_pool).await {
         Ok(res) => {
             let new_delivery_time = res.delivery_time;
@@ -20,7 +27,7 @@ pub async fn create_message(
                     error!("Failed to send new delivery time to process loop");
                 }
             });
-            StatusCode::CREATED
+            (StatusCode::CREATED, String::new())
         }
         Err(err) => {
             let message_info = serde_json::to_string(&msg)
@@ -30,7 +37,7 @@ pub async fn create_message(
                 error = err.to_string(),
                 "Failed to create message"
             );
-            StatusCode::INTERNAL_SERVER_ERROR
+            (StatusCode::INTERNAL_SERVER_ERROR, String::new())
         }
     }
 }

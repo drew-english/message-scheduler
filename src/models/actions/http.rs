@@ -8,8 +8,13 @@ use crate::core::action_builder::{Action, ActionError};
 #[derive(Deserialize, Clone)]
 #[serde(rename_all = "lowercase")]
 enum AuthMethod {
-    Basic { username: String, password: Option<String> },
-    Bearer { token: String },
+    Basic {
+        username: String,
+        password: Option<String>,
+    },
+    Bearer {
+        token: String,
+    },
     None,
 }
 
@@ -53,21 +58,22 @@ impl Action for HttpV1 {
         builder = match (&self.method, self.body.to_string().len()) {
             (HttpMethod::Get, _) => builder,
             (_, 0) => builder,
-            (_, _) => {
-                builder.header("Content-Type", "application/json")
-                    .body(self.body.clone())
-            }
+            (_, _) => builder
+                .header("Content-Type", "application/json")
+                .body(self.body.clone()),
         };
 
         builder = match &self.auth {
-            AuthMethod::Basic { username, password } => builder.basic_auth(username, password.clone()),
+            AuthMethod::Basic { username, password } => {
+                builder.basic_auth(username, password.clone())
+            }
             AuthMethod::Bearer { token } => builder.bearer_auth(token),
             AuthMethod::None => builder,
         };
 
         let res = builder.send().await?;
         info!(status = res.status().to_string());
-        
+
         Ok(())
     }
 }
