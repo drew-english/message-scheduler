@@ -9,6 +9,7 @@ edition = "2021"
 async-trait = "0.1.57"
 axum = "0.5.16"
 chrono = { version = "0.4.22", features = ["serde"] }
+config = { version = "0.13.2", features = ["yaml"] }
 dotenv = "0.15.0"
 reqwest = { version = "0.11.12", features = ["json"] }
 serde = "1.0.145"
