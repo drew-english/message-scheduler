@@ -1,10 +1,11 @@
 use std::fmt;
 
 use async_trait::async_trait;
+use aws_sdk_sns::types::SdkError;
 use serde_json::Value;
 
 use crate::models::{
-    actions::{HttpV1, LogV1},
+    actions::{HttpV1, LogV1, SnsV1},
     message::ActionType,
     Message,
 };
@@ -22,6 +23,12 @@ impl From<serde_json::Error> for ActionError {
 
 impl From<reqwest::Error> for ActionError {
     fn from(err: reqwest::Error) -> ActionError {
+        ActionError::ExecError(err.to_string())
+    }
+}
+
+impl From<SdkError<aws_sdk_sns::error::PublishError>> for ActionError {
+    fn from(err: SdkError<aws_sdk_sns::error::PublishError>) -> ActionError {
         ActionError::ExecError(err.to_string())
     }
 }
@@ -57,6 +64,8 @@ pub fn validate_action(
         (ActionType::Log, _) => LogV1::init(attr).err(),
         (ActionType::Http, 1) => HttpV1::init(attr).err(),
         (ActionType::Http, _) => HttpV1::init(attr).err(),
+        (ActionType::Sns, 1) => SnsV1::init(attr).err(),
+        (ActionType::Sns, _) => SnsV1::init(attr).err(),
     }
 }
 
@@ -74,6 +83,8 @@ pub fn create_action(
         (ActionType::Log, _) => Box::new(LogV1::init(attr)?),
         (ActionType::Http, 1) => Box::new(HttpV1::init(attr)?),
         (ActionType::Http, _) => Box::new(HttpV1::init(attr)?),
+        (ActionType::Sns, 1) => Box::new(SnsV1::init(attr)?),
+        (ActionType::Sns, _) => Box::new(SnsV1::init(attr)?),
     })
 }
 

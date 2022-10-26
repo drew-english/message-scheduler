@@ -12,6 +12,7 @@ use uuid::Uuid;
 pub enum ActionType {
     Log = 0,
     Http = 1,
+    Sns = 2
 }
 
 impl fmt::Display for ActionType {
@@ -28,6 +29,7 @@ impl Serialize for ActionType {
         match self {
             ActionType::Log => serializer.serialize_str("log"),
             ActionType::Http => serializer.serialize_str("http"),
+            ActionType::Sns => serializer.serialize_str("sns"),
         }
     }
 }
