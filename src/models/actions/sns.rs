@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use aws_sdk_sns::{Region, Client};
+use aws_sdk_sns::{Client, Region};
 use serde::Deserialize;
 use serde_json::Value;
 use tracing::info;
@@ -34,7 +34,10 @@ impl Action for SnsV1 {
             .send()
             .await?;
 
-        info!(sns_message_id = pub_res.message_id().unwrap_or("not_found"), "SNS message publish success");
+        info!(
+            sns_message_id = pub_res.message_id().unwrap_or("not_found"),
+            "SNS message publish success"
+        );
         Ok(())
     }
 }

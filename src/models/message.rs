@@ -12,7 +12,7 @@ use uuid::Uuid;
 pub enum ActionType {
     Log = 0,
     Http = 1,
-    Sns = 2
+    Sns = 2,
 }
 
 impl fmt::Display for ActionType {

@@ -3,6 +3,7 @@ use axum::{
     http::StatusCode,
 };
 use chrono::{DateTime, Utc};
+use serde_json::{json, Value};
 use sqlx::{Pool, Postgres};
 use tokio::{sync::mpsc::UnboundedSender, task};
 use tracing::error;
@@ -13,21 +14,24 @@ pub async fn create_message(
     Json(msg): Json<crate::models::Message>,
     Extension(db_pool): Extension<Pool<Postgres>>,
     Extension(msg_delivery_tx): Extension<UnboundedSender<Option<DateTime<Utc>>>>,
-) -> (StatusCode, String) {
+) -> (StatusCode, Json<Value>) {
     let action_err = validate_action(&msg);
     if action_err.is_some() {
-        return (StatusCode::BAD_REQUEST, action_err.unwrap().to_string());
+        return (
+            StatusCode::BAD_REQUEST,
+            json!({ "error": action_err.unwrap().to_string() }).into(),
+        );
     }
 
     match msg.create(&db_pool).await {
-        Ok(res) => {
-            let new_delivery_time = res.delivery_time;
+        Ok(msg) => {
+            let new_delivery_time = msg.delivery_time;
             task::spawn(async move {
                 if msg_delivery_tx.send(Some(new_delivery_time)).is_err() {
                     error!("Failed to send new delivery time to process loop");
                 }
             });
-            (StatusCode::CREATED, String::new())
+            (StatusCode::CREATED, json!({ "message_id": msg.id }).into())
         }
         Err(err) => {
             let message_info = serde_json::to_string(&msg)
@@ -37,7 +41,10 @@ pub async fn create_message(
                 error = err.to_string(),
                 "Failed to create message"
             );
-            (StatusCode::INTERNAL_SERVER_ERROR, String::new())
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                json!({ "error": "Internal error, failed to create message" }).into(),
+            )
         }
     }
 }

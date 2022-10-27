@@ -16,7 +16,7 @@ pub fn load() -> Result<AppConfig, config::ConfigError> {
         .set_default("port", "8000")?
         .set_default("env", "local")?
         .add_source(config::Environment::default());
-        
+
     let mut cfg = builder.build_cloned()?;
 
     if cfg.get_string("env")? == "local" {
