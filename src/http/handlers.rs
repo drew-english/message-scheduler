@@ -10,6 +10,10 @@ use tracing::error;
 
 use crate::core::action_builder::validate_action;
 
+pub async fn health_check() -> StatusCode {
+    StatusCode::OK
+}
+
 pub async fn create_message(
     Json(msg): Json<crate::models::Message>,
     Extension(db_pool): Extension<Pool<Postgres>>,

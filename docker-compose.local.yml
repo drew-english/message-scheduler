@@ -1,0 +1,38 @@
+version: '3.8'
+name: ms-local
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_PASSWORD: password
+    healthcheck:
+      test: pg_isready -U postgres
+      interval: 1s
+      timeout: 10s
+      retries: 3
+      start_period: 1s
+
+  migrate:
+    build: .
+    environment:
+      DATABASE_URL: postgres://postgres:password@db/message_scheduler
+    command:
+      - sqlx
+      - database
+      - setup
+    depends_on:
+      db:
+        condition: service_healthy
+
+  app:
+    build: .
+    environment:
+      RUST_ENV: development
+      DATABASE_URL: postgres://postgres:password@db/message_scheduler
+    ports:
+      - 8000:8000
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully

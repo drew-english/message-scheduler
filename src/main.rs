@@ -32,8 +32,8 @@ async fn main() {
     let db_pool = db_connection(&cfg.database_url).await;
     let new_msg_delivery_tx = process_loop::run(db_pool.clone());
 
-    info!(host = cfg.host, port = cfg.port, "Binding server to");
-    let addr = format!("{}:{}", cfg.host, cfg.port)
+    info!(host = cfg.api_host, port = cfg.api_port, "Binding server to");
+    let addr = format!("{}:{}", cfg.api_host, cfg.api_port)
         .parse::<SocketAddr>()
         .unwrap();
 

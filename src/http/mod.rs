@@ -1,7 +1,7 @@
 mod handlers;
 mod layers;
 
-use axum::{extract::Extension, middleware, routing::post, Router};
+use axum::{extract::Extension, middleware, routing::{get, post}, Router};
 use chrono::{DateTime, Utc};
 use tokio::sync::mpsc;
 use tower::ServiceBuilder;
@@ -11,6 +11,7 @@ pub fn router(
     msg_delivery_tx: mpsc::UnboundedSender<Option<DateTime<Utc>>>,
 ) -> Router {
     Router::new()
+        .route("/health", get(handlers::health_check))
         .route("/api/v1/message", post(handlers::create_message))
         .layer(
             ServiceBuilder::new()

@@ -1,0 +1,76 @@
+{
+  "db": "PostgreSQL",
+  "03204c1b5f82555fd0a102dba1496769dceba95d8a042b5c6df5fc1e4ae5def4": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "DELETE FROM messages WHERE id=$1"
+  },
+  "273b72e532aa8491f98a3d21a39fe8a055c6fb83a831dcada04721c35ee6d436": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "delivery_time",
+          "ordinal": 1,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "action_type: _",
+          "ordinal": 2,
+          "type_info": "Int2"
+        },
+        {
+          "name": "version",
+          "ordinal": 3,
+          "type_info": "Int2"
+        },
+        {
+          "name": "attributes",
+          "ordinal": 4,
+          "type_info": "Jsonb"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Timestamptz",
+          "Int8"
+        ]
+      }
+    },
+    "query": "SELECT id, delivery_time, action_type AS \"action_type: _\", version, attributes FROM messages WHERE delivery_time <= $1 LIMIT $2"
+  },
+  "9499b69f0927ea15485bda3fd4bd2645368f635acc142eb746828d5ab8dad805": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Timestamptz",
+          "Int2",
+          "Int2",
+          "Jsonb"
+        ]
+      }
+    },
+    "query": "INSERT INTO messages (id, delivery_time, action_type, version, attributes) values ($1, $2, $3, $4, $5)"
+  }
+}
